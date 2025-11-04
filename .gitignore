@@ -32,3 +32,6 @@ application-local.yml
 
 # Test
 .test/
+
+# Claude Code
+.claude

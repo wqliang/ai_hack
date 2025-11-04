@@ -3,15 +3,17 @@ package ai.hack.controller;
 import ai.hack.dto.ChatRequest;
 import ai.hack.dto.ChatResponse;
 import ai.hack.service.ChatService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/chat")
-@RequiredArgsConstructor
 public class ChatController {
 
     private final ChatService chatService;
+
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
+    }
 
     @PostMapping
     public ChatResponse chat(@RequestBody ChatRequest request) {
