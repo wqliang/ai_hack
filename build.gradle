@@ -21,6 +21,7 @@ repositories {
 
 ext {
     springAiVersion = '1.0.3'
+    rocketmqVersion = '5.3.3'
 }
 
 dependencies {
@@ -30,8 +31,28 @@ dependencies {
     implementation "org.springframework.ai:spring-ai-openai:${springAiVersion}"
     implementation "org.springframework.ai:spring-ai-ollama:${springAiVersion}"
 
+    // RocketMQ dependencies (排除冲突的日志依赖)
+    implementation("org.apache.rocketmq:rocketmq-namesrv:${rocketmqVersion}") {
+        exclude group: 'io.github.aliyunmq', module: 'rocketmq-shaded-slf4j-api-bridge'
+    }
+    implementation("org.apache.rocketmq:rocketmq-broker:${rocketmqVersion}") {
+        exclude group: 'io.github.aliyunmq', module: 'rocketmq-shaded-slf4j-api-bridge'
+    }
+    implementation("org.apache.rocketmq:rocketmq-common:${rocketmqVersion}") {
+        exclude group: 'io.github.aliyunmq', module: 'rocketmq-shaded-slf4j-api-bridge'
+    }
+    implementation("org.apache.rocketmq:rocketmq-tools:${rocketmqVersion}") {
+        exclude group: 'io.github.aliyunmq', module: 'rocketmq-shaded-slf4j-api-bridge'
+    }
+    implementation("org.apache.rocketmq:rocketmq-client:${rocketmqVersion}") {
+        exclude group: 'io.github.aliyunmq', module: 'rocketmq-shaded-slf4j-api-bridge'
+    }
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
