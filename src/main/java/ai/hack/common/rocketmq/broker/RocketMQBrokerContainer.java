@@ -1,4 +1,4 @@
-package ai.hack.rocketmq.broker;
+package ai.hack.common.rocketmq.broker;
 
 import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.common.BrokerConfig;

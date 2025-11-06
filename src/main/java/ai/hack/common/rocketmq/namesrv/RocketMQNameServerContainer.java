@@ -1,4 +1,4 @@
-package ai.hack.rocketmq.namesrv;
+package ai.hack.common.rocketmq.namesrv;
 
 import org.apache.rocketmq.common.namesrv.NamesrvConfig;
 import org.apache.rocketmq.namesrv.NamesrvController;
@@ -20,6 +20,7 @@ public class RocketMQNameServerContainer {
     private final NettyServerConfig nettyServerConfig;
     private NamesrvController namesrvController;
     private final AtomicBoolean started = new AtomicBoolean(false);
+    private final Object LOCK = new Object();
 
     private RocketMQNameServerContainer(Builder builder) {
         this.namesrvConfig = new NamesrvConfig();
@@ -47,15 +48,19 @@ public class RocketMQNameServerContainer {
         if (started.compareAndSet(false, true)) {
             log.info("Starting RocketMQ NameServer...");
 
-            this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
+            synchronized (LOCK) {
+                if (started.compareAndSet(false, true)) {
+                    this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
 
-            boolean initResult = namesrvController.initialize();
-            if (!initResult) {
-                namesrvController.shutdown();
-                throw new RuntimeException("Failed to initialize RocketMQ NameServer");
+                    boolean initResult = namesrvController.initialize();
+                    if (!initResult) {
+                        namesrvController.shutdown();
+                        throw new RuntimeException("Failed to initialize RocketMQ NameServer");
+                    }
+
+                    namesrvController.start();
+                }
             }
-
-            namesrvController.start();
 
             log.info("RocketMQ NameServer started successfully on port: {}",
                     nettyServerConfig.getListenPort());

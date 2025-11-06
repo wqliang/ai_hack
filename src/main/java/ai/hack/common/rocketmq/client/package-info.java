@@ -1,4 +1,4 @@
-package ai.hack.rocketmq.client;
+package ai.hack.common.rocketmq.client;
 
 /**
  * RocketMQ 客户端工具包

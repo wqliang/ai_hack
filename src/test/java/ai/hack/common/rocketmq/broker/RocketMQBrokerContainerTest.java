@@ -1,7 +1,10 @@
-package ai.hack.rocketmq.broker;
+package ai.hack.common.rocketmq.broker;
 
-import ai.hack.rocketmq.namesrv.RocketMQNameServerContainer;
+import ai.hack.common.rocketmq.namesrv.RocketMQNameServerContainer;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,12 +23,12 @@ class RocketMQBrokerContainerTest {
     private static final Logger log = LoggerFactory.getLogger(RocketMQBrokerContainerTest.class);
 
     @TempDir
-    File tempDir;
+    private static File tempDir;
 
-    private RocketMQNameServerContainer nameServerContainer;
+    private static RocketMQNameServerContainer nameServerContainer;
 
-    @BeforeEach
-    void setUp() throws Exception {
+    @BeforeAll
+    static void setUp() throws Exception {
         // 每个测试前启动 NameServer
         nameServerContainer = RocketMQNameServerContainer.builder()
                 .listenPort(19876)
@@ -38,8 +41,8 @@ class RocketMQBrokerContainerTest {
         log.info("Test NameServer started at {}", nameServerContainer.getFullAddress());
     }
 
-    @AfterEach
-    void tearDown() {
+    @BeforeAll
+    static void tearDown() {
         // 每个测试后关闭 NameServer
         if (nameServerContainer != null && nameServerContainer.isRunning()) {
             nameServerContainer.shutdown();
@@ -95,7 +98,7 @@ class RocketMQBrokerContainerTest {
 
         // 验证默认配置
         assertEquals("broker-a", container.getBrokerName());
-        assertEquals("DefaultCluster", container.getClusterName());
+        assertEquals("AIHackCluster", container.getClusterName());
         assertEquals(0L, container.getBrokerId());
         assertEquals(10911, container.getListenPort());
         assertEquals("127.0.0.1:9876", container.getNamesrvAddr());

@@ -1,7 +1,7 @@
-package ai.hack.rocketmq.client;
+package ai.hack.common.rocketmq.client;
 
-import ai.hack.rocketmq.broker.RocketMQBrokerContainer;
-import ai.hack.rocketmq.namesrv.RocketMQNameServerContainer;
+import ai.hack.common.rocketmq.broker.RocketMQBrokerContainer;
+import ai.hack.common.rocketmq.namesrv.RocketMQNameServerContainer;
 import org.apache.rocketmq.common.TopicConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

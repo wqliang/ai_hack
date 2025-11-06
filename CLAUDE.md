@@ -40,6 +40,7 @@ Application runs on http://localhost:8080
 - `ai.hack.controller` - REST endpoints (ChatController)
 - `ai.hack.service` - Business logic (ChatService)
 - `ai.hack.dto` - Request/Response objects (Java records)
+- `ai.hack.test` - Test utilities (EmbeddedRocketMQBroker)
 
 ### Spring AI Integration
 The application uses Spring AI's `ChatModel` interface, which can be backed by:
@@ -92,3 +93,8 @@ Always use `--no-ff` flag for merges to maintain branch history.
 - `GET /api/chat/health` - Health check
 - `POST /api/chat` - Simple chat (requires `message` in request body)
 - `POST /api/chat/with-system` - Chat with custom system prompt (requires `message` and optional `systemMessage`)
+
+## Additional Components
+
+### Embedded RocketMQ Broker
+Located at `src/main/java/ai/hack/test/EmbeddedRocketMQBroker.java`, this utility provides a minimal embedded RocketMQ broker for testing purposes. It configures both NameServer and Broker with resource-minimized settings suitable for development environments.

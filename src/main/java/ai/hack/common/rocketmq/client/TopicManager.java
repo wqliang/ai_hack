@@ -1,4 +1,4 @@
-package ai.hack.rocketmq.client;
+package ai.hack.common.rocketmq.client;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -308,6 +308,18 @@ public class TopicManager {
             // 步骤6: 捕获所有异常，返回 false
             return false;
         }
+    }
+
+    /**
+     * 检查 Topic 是否存在（按集群）
+     *
+     * @param clusterName 集群名称
+     * @param topicName Topic 名称
+     * @return true 如果存在
+     */
+    public boolean topicExists(String clusterName, String topicName) {
+        // 直接调用无集群名的版本，因为 Topic 是全局概念
+        return topicExists(topicName);
     }
 
     /**
