@@ -35,3 +35,9 @@ application-local.yml
 
 # Claude Code
 .claude
+
+# spec-kit
+.specify
+
+# jacoco
+test-reports
