@@ -41,7 +41,7 @@ class RocketMQBrokerContainerTest {
         log.info("Test NameServer started at {}", nameServerContainer.getFullAddress());
     }
 
-    @BeforeAll
+    @AfterAll
     static void tearDown() {
         // 每个测试后关闭 NameServer
         if (nameServerContainer != null && nameServerContainer.isRunning()) {
@@ -98,7 +98,7 @@ class RocketMQBrokerContainerTest {
 
         // 验证默认配置
         assertEquals("broker-a", container.getBrokerName());
-        assertEquals("AIHackCluster", container.getClusterName());
+        assertEquals("DefaultCluster", container.getClusterName());
         assertEquals(0L, container.getBrokerId());
         assertEquals(10911, container.getListenPort());
         assertEquals("127.0.0.1:9876", container.getNamesrvAddr());

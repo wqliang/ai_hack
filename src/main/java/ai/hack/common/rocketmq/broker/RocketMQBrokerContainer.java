@@ -36,6 +36,10 @@ public class RocketMQBrokerContainer {
         this.brokerConfig.setBrokerId(builder.brokerId);
         this.brokerConfig.setNamesrvAddr(builder.namesrvAddr);
 
+        // 设置更短的注册间隔以便测试更快完成
+        // 默认是30秒，我们改为5秒
+        this.brokerConfig.setRegisterNameServerPeriod(5000);
+
         this.nettyServerConfig.setListenPort(builder.listenPort);
 
         String storePathRootDir = builder.storePathRootDir;

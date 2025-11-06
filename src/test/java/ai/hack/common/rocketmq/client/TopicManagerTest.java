@@ -22,7 +22,7 @@ class TopicManagerTest {
     private static final Logger log = LoggerFactory.getLogger(TopicManagerTest.class);
 
     @TempDir
-    static File tempDir;
+    private static File tempDir;
 
     private static RocketMQNameServerContainer nameServer;
     private static RocketMQBrokerContainer broker;
@@ -36,7 +36,7 @@ class TopicManagerTest {
                 .rocketmqHome(new File(tempDir, "namesrv").getAbsolutePath())
                 .build();
         nameServer.start();
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         log.info("Test NameServer started at {}", nameServer.getFullAddress());
 
         // 启动 Broker
@@ -50,13 +50,43 @@ class TopicManagerTest {
                 .autoCreateTopicEnable(false)
                 .build();
         broker.start();
+
+        // 等待 Broker 完全注册到 NameServer
+        // Broker 需要时间启动并向 NameServer 注册
+        log.info("Waiting for Broker to register with NameServer...");
         Thread.sleep(13000);
         log.info("Test Broker started at {}", broker.getBrokerAddress());
 
         // 创建 TopicManager
         topicManager = new TopicManager(nameServer.getFullAddress());
         topicManager.start();
-        log.info("TopicManager started");
+
+        // 验证连接 - 重试机制，增加重试次数和间隔
+        int maxRetries = 3;
+        boolean connected = false;
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                // 尝试列出 topics 来验证连接
+                Set<String> topics = topicManager.listTopics();
+                connected = true;
+                log.info("TopicManager successfully connected to cluster. Found {} initial topics.", topics.size());
+                break;
+            } catch (Exception e) {
+                if (i < maxRetries - 1) {
+                    log.warn("Connection attempt {} failed: {}, retrying in 5 seconds...", i + 1, e.getMessage());
+                    Thread.sleep(5000);
+                } else {
+                    log.error("Failed to connect after {} attempts", maxRetries, e);
+                    throw e;
+                }
+            }
+        }
+
+        if (!connected) {
+            throw new IllegalStateException("Failed to establish connection to RocketMQ cluster");
+        }
+
+        log.info("TopicManager started and verified");
     }
 
     @AfterAll

@@ -98,3 +98,10 @@ Always use `--no-ff` flag for merges to maintain branch history.
 
 ### Embedded RocketMQ Broker
 Located at `src/main/java/ai/hack/test/EmbeddedRocketMQBroker.java`, this utility provides a minimal embedded RocketMQ broker for testing purposes. It configures both NameServer and Broker with resource-minimized settings suitable for development environments.
+
+## Active Technologies
+- Java 21 (existing project standard) + Spring Boot 3.3.5, Spring AI 1.0.3, JUnit 5, Mockito, MockMvc, AssertJ (001-chat-service-controller-tests)
+- N/A (testing feature, no new storage requirements) (001-chat-service-controller-tests)
+
+## Recent Changes
+- 001-chat-service-controller-tests: Added Java 21 (existing project standard) + Spring Boot 3.3.5, Spring AI 1.0.3, JUnit 5, Mockito, MockMvc, AssertJ

@@ -49,7 +49,7 @@ public class RocketMQNameServerContainer {
             log.info("Starting RocketMQ NameServer...");
 
             synchronized (LOCK) {
-                if (started.compareAndSet(false, true)) {
+                if (!started.get()) {
                     this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
 
                     boolean initResult = namesrvController.initialize();
