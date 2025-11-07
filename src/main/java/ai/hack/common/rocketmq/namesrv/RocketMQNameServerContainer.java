@@ -45,11 +45,10 @@ public class RocketMQNameServerContainer {
     }
 
     public void start() throws Exception {
-        if (started.compareAndSet(false, true)) {
-            log.info("Starting RocketMQ NameServer...");
 
-            synchronized (LOCK) {
-                if (started.compareAndSet(false, true)) {
+        synchronized (LOCK) {
+            if (started.compareAndSet(false, true)) {
+                log.info("Starting RocketMQ NameServer...");
                     this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
 
                     boolean initResult = namesrvController.initialize();
@@ -59,15 +58,16 @@ public class RocketMQNameServerContainer {
                     }
 
                     namesrvController.start();
-                }
-            }
+                log.info("=======================================================");
 
-            log.info("RocketMQ NameServer started successfully on port: {}",
-                    nettyServerConfig.getListenPort());
-            log.info("NameServer address: {}:{}",
-                    getAddress(), nettyServerConfig.getListenPort());
-        } else {
-            log.warn("RocketMQ NameServer is already started");
+                log.info("RocketMQ NameServer started successfully on port: {}",
+                        nettyServerConfig.getListenPort());
+                log.info("NameServer address: {}:{}",
+                        getAddress(), nettyServerConfig.getListenPort());
+                log.info("=======================================================");
+            } else {
+                log.warn("RocketMQ NameServer is already started");
+            }
         }
     }
 
