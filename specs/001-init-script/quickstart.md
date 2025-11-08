@@ -12,6 +12,8 @@ The initialization scripts are located in the `scripts` directory at the project
 - `init-windows.bat` for Windows environments
 - `init-linux.sh` for Linux environments
 
+For detailed usage instructions, see the [scripts/README.md](../../scripts/README.md) file.
+
 No additional installation is required.
 
 ## Usage

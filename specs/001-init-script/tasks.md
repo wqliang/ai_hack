@@ -101,11 +101,11 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T027 [P] Create README.md with usage instructions in scripts/
-- [ ] T028 Add documentation references to quickstart.md
+ - [x] T027 [P] Create README.md with usage instructions in scripts/
+- [x] T028 Add documentation references to quickstart.md
 - [ ] T029 [P] Update contracts/api-contracts.md with final interfaces
 - [ ] T030 Run quickstart.md validation on both platforms
-- [ ] T031 [P] Add example usage to documentation
+- [x] T031 [P] Add example usage to documentation
 - [ ] T032 Security review of script execution permissions
 
 ---
