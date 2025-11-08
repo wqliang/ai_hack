@@ -86,11 +86,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Enhance Windows script with improved error messages
-- [ ] T022 [P] [US2] Enhance Linux script with improved error messages
+- [x] T021 [P] [US2] Enhance Windows script with improved error messages
+- [x] T022 [P] [US2] Enhance Linux script with improved error messages
 - [x] T023 [US2] Align logging format between Windows and Linux scripts
 - [x] T024 [US2] Ensure equivalent exit codes for similar conditions
-- [ ] T025 [US2] Add platform-specific troubleshooting guidance
+- [x] T025 [US2] Add platform-specific troubleshooting guidance
 - [x] T026 [US2] Verify consistent .env file format across platforms
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently

@@ -85,12 +85,23 @@ Example output:
 
 Ensure RocketMQ is properly installed and the `mqadmin` tool is in your system PATH.
 
+**Windows:**
+- Verify RocketMQ is installed and `ROCKETMQ_HOME` environment variable is set
+- Check that `%ROCKETMQ_HOME%\bin` is in your PATH
+- Run `where mqadmin` to verify the tool is found
+
+**Linux:**
+- Verify RocketMQ is installed and `ROCKETMQ_HOME` environment variable is set
+- Check that `$ROCKETMQ_HOME/bin` is in your PATH
+- Run `which mqadmin` to verify the tool is found
+
 ### "Failed to create HelloServiceTopic" Warning
 
 This may occur if:
-- RocketMQ is not running
+- RocketMQ is not running (ensure NameServer and Broker are started)
 - You don't have permissions to create topics
 - The topic already exists (harmless warning)
+- Network connectivity issues with RocketMQ server
 
 ### Script Execution Policy Errors (Windows)
 
@@ -98,6 +109,25 @@ If you encounter execution policy errors on Windows, you may need to adjust your
 ```cmd
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### "Access Denied" or Permission Errors
+
+**Windows:**
+- Run Command Prompt or PowerShell as Administrator
+- Ensure you have write permissions in the current directory
+- Check antivirus/firewall settings that might block file creation
+
+**Linux:**
+- Run with appropriate permissions or use `sudo` if needed
+- Ensure you have write permissions in the current directory
+- Check SELinux or AppArmor policies that might restrict file operations
+
+### .env File Not Created
+
+If the .env file is not created:
+- Check available disk space
+- Verify write permissions in the current directory
+- Ensure no security software is blocking file creation
 
 ## Customization
 

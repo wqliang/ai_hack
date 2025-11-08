@@ -22,7 +22,11 @@ echo "[INFO] Starting RocketMQ client initialization for Linux..."
 # Check if mqadmin is available
 if ! command -v mqadmin &> /dev/null
 then
-    echo "[ERROR] mqadmin tool not found. Please ensure RocketMQ is installed and accessible via PATH."
+    echo "[ERROR] RocketMQ administration tool (mqadmin) not found. Please ensure:"
+    echo "       1. RocketMQ is installed on your system"
+    echo "       2. ROCKETMQ_HOME environment variable is set (if applicable)"
+    echo "       3. mqadmin is in your system PATH"
+    echo "       You can verify by running: which mqadmin"
     exit 1
 fi
 
@@ -45,7 +49,12 @@ EOF
 if [ -f ".env" ]; then
     echo "[SUCCESS] .env file created successfully."
 else
-    echo "[ERROR] Failed to create .env file."
+    echo "[ERROR] Failed to create .env file in the current directory."
+    echo "       Possible causes:"
+    echo "       1. Insufficient write permissions in the current directory"
+    echo "       2. Disk space is full"
+    echo "       3. Security software blocking file creation"
+    echo "       Please ensure you have write permissions in the current directory."
     exit 1
 fi
 
