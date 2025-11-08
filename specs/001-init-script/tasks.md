@@ -60,14 +60,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create Windows initialization script with topic creation in scripts/init-windows.bat
-- [ ] T012 [P] [US1] Create Linux initialization script with topic creation in scripts/init-linux.sh
-- [ ] T013 [US1] Implement RocketMQ validation in Windows script (depends on T011)
-- [ ] T014 [US1] Implement RocketMQ validation in Linux script (depends on T012)
-- [ ] T015 [US1] Add .env file generation to Windows script (depends on T011)
-- [ ] T016 [US1] Add .env file generation to Linux script (depends on T012)
-- [ ] T017 [US1] Add detailed logging and error handling to both scripts
-- [ ] T018 [US1] Add success/failure reporting to both scripts
+- [x] T011 [P] [US1] Create Windows initialization script with topic creation in scripts/init-windows.bat
+- [x] T012 [P] [US1] Create Linux initialization script with topic creation in scripts/init-linux.sh
+- [x] T013 [US1] Implement RocketMQ validation in Windows script (depends on T011)
+- [x] T014 [US1] Implement RocketMQ validation in Linux script (depends on T012)
+- [x] T015 [US1] Add .env file generation to Windows script (depends on T011)
+- [x] T016 [US1] Add .env file generation to Linux script (depends on T012)
+- [x] T017 [US1] Add detailed logging and error handling to both scripts
+- [x] T018 [US1] Add success/failure reporting to both scripts
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
