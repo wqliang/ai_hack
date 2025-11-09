@@ -39,6 +39,7 @@ public enum ErrorCode {
 
     // Resource errors
     RESOURCE_EXHAUSTED("RES_001", "Resources exhausted (memory, connections)", true),
+    SYSTEM_OVERLOADED("SYS_001", "System overloaded, retry later", true),
     THREAD_POOL_ERROR("POOL_001", "Thread pool resource management error", false),
 
     // General errors

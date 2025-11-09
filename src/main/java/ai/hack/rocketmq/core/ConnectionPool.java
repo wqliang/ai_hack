@@ -43,7 +43,7 @@ public class ConnectionPool implements InitializingBean, DisposableBean {
     private ScheduledFuture<?> healthCheckTask;
 
     // Circuit breaker state
-    private volatile int consecutiveFailures = 0;
+    private final AtomicInteger consecutiveFailures = new AtomicInteger(0);
     private volatile boolean circuitOpen = false;
     private final int circuitBreakerThreshold;
     private final Duration circuitBreakerTimeout;
@@ -225,7 +225,7 @@ public class ConnectionPool implements InitializingBean, DisposableBean {
                     activeConnections.get(),
                     availableConnections.size(),
                     totalConnectionsCreated.get(),
-                    consecutiveFailures,
+                    consecutiveFailures.get(),
                     circuitOpen,
                     circuitOpenTime,
                     !shutdown
@@ -289,15 +289,16 @@ public class ConnectionPool implements InitializingBean, DisposableBean {
         String connectionId = "conn-" + System.currentTimeMillis() + "-" + totalConnectionsCreated.incrementAndGet();
 
         // Mock connection for demonstration purposes
-        return new PooledConnection(connectionId) {
+        PooledConnection connection = new PooledConnection() {
             private volatile boolean healthy = true;
             private volatile boolean borrowed = false;
             private Instant lastUsed = Instant.now();
             private Instant created = Instant.now();
+            private final String id = connectionId;
 
             @Override
             public String getId() {
-                return connectionId;
+                return id;
             }
 
             @Override
@@ -344,6 +345,8 @@ public class ConnectionPool implements InitializingBean, DisposableBean {
                 return lastUsed;
             }
         };
+
+        return connection;
     }
 
     private void closeConnection(PooledConnection connection) {

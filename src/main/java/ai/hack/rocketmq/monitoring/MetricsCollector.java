@@ -11,6 +11,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.DoubleAdder;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Collector for RocketMQ client metrics and performance data.
@@ -44,7 +46,8 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
 
     // Custom metrics
     private final ConcurrentHashMap<String, AtomicLong> customCounters = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, AtomicDouble> customGauges = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Double> customGauges = new ConcurrentHashMap<>();
+    private final ReentrantReadWriteLock gaugesLock = new ReentrantReadWriteLock();
 
     // Scheduled task for metric calculations
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -154,7 +157,12 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
     }
 
     public void setGauge(String name, double value) {
-        customGauges.computeIfAbsent(name, k -> new AtomicDouble(0)).set(value);
+        gaugesLock.writeLock().lock();
+        try {
+            customGauges.put(name, value);
+        } finally {
+            gaugesLock.writeLock().unlock();
+        }
     }
 
     // Metric accessors
@@ -217,8 +225,13 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
     }
 
     public double getCustomGauge(String name) {
-        AtomicDouble gauge = customGauges.get(name);
-        return gauge != null ? gauge.get() : 0.0;
+        gaugesLock.readLock().lock();
+        try {
+            Double gauge = customGauges.get(name);
+            return gauge != null ? gauge : 0.0;
+        } finally {
+            gaugesLock.readLock().unlock();
+        }
     }
 
     /**
@@ -239,6 +252,8 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
                 getTimeouts(),
                 getCurrentThroughput(),
                 getCurrentErrorRate(),
+                heapMemoryUsed.get(),
+                directMemoryUsed.get(),
                 Instant.now()
         );
     }
@@ -321,13 +336,16 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
         private final long timeouts;
         private final double throughput;
         private final double errorRate;
+        private final long heapMemoryUsed;
+        private final long directMemoryUsed;
         private final Instant timestamp;
 
         public PerformanceSnapshot(long messagesSent, long messagesReceived, long messagesFailed,
                                  long bytesSent, long bytesReceived, double averageLatencyMs,
                                  long minLatencyNanos, long maxLatencyNanos, int activeConnections,
                                  long connectionErrors, long timeouts, double throughput,
-                                 double errorRate, Instant timestamp) {
+                                 double errorRate, long heapMemoryUsed, long directMemoryUsed,
+                                 Instant timestamp) {
             this.messagesSent = messagesSent;
             this.messagesReceived = messagesReceived;
             this.messagesFailed = messagesFailed;
@@ -341,6 +359,8 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
             this.timeouts = timeouts;
             this.throughput = throughput;
             this.errorRate = errorRate;
+            this.heapMemoryUsed = heapMemoryUsed;
+            this.directMemoryUsed = directMemoryUsed;
             this.timestamp = timestamp;
         }
 
@@ -358,6 +378,8 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
         public long getTimeouts() { return timeouts; }
         public double getThroughput() { return throughput; }
         public double getErrorRate() { return errorRate; }
+        public long getHeapMemoryUsed() { return heapMemoryUsed; }
+        public long getDirectMemoryUsed() { return directMemoryUsed; }
         public Instant getTimestamp() { return timestamp; }
 
         @Override
@@ -445,5 +467,14 @@ public class MetricsCollector implements InitializingBean, DisposableBean {
             return String.format("MemoryStats{heap=%dMB, direct=%dMB, max=%dMB, utilization=%.1f%%}",
                                heapUsedMB, directUsedMB, maxHeapMB, getHeapUtilizationPercent());
         }
+    }
+
+    // Additional methods called by other classes
+    public void addCustomCounter(String name, long value) {
+        customCounters.computeIfAbsent(name, k -> new AtomicLong(0)).addAndGet(value);
+    }
+
+    public void incrementBackpressureEvents() {
+        timeouts.incrementAndGet();
     }
 }

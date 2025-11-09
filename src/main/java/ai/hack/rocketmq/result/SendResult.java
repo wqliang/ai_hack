@@ -1,6 +1,7 @@
 package ai.hack.rocketmq.result;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -19,26 +20,27 @@ public class SendResult {
     private final Duration processingTime;
     private final String queueName;
     private final int queueId;
+    private final long startTimestamp;
 
     // Create successful result
     public static SendResult success(String messageId, String topic, long offset, Duration processingTime) {
-        return new SendResult(messageId, topic, true, null, offset, processingTime, null, -1);
+        return new SendResult(messageId, topic, true, null, offset, processingTime, null, -1, System.currentTimeMillis());
     }
 
     // Create successful result with queue information
     public static SendResult success(String messageId, String topic, long offset, Duration processingTime,
                                    String queueName, int queueId) {
-        return new SendResult(messageId, topic, true, null, offset, processingTime, queueName, queueId);
+        return new SendResult(messageId, topic, true, null, offset, processingTime, queueName, queueId, System.currentTimeMillis());
     }
 
     // Create failed result
     public static SendResult failure(String messageId, String topic, String errorMessage) {
-        return new SendResult(messageId, topic, false, errorMessage, -1, Duration.ZERO, null, -1);
+        return new SendResult(messageId, topic, false, errorMessage, -1, Duration.ZERO, null, -1, System.currentTimeMillis());
     }
 
     // Private constructor
     private SendResult(String messageId, String topic, boolean success, String errorMessage,
-                      long offset, Duration processingTime, String queueName, int queueId) {
+                      long offset, Duration processingTime, String queueName, int queueId, long startTimestamp) {
         this.messageId = messageId;
         this.topic = topic;
         this.success = success;
@@ -47,6 +49,7 @@ public class SendResult {
         this.processingTime = processingTime;
         this.queueName = queueName;
         this.queueId = queueId;
+        this.startTimestamp = startTimestamp;
     }
 
     // Getters
@@ -80,6 +83,10 @@ public class SendResult {
 
     public int getQueueId() {
         return queueId;
+    }
+
+    public long getStartTimestamp() {
+        return startTimestamp;
     }
 
     /**

@@ -33,8 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException as JavaTimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -163,27 +163,24 @@ public class DefaultRocketMQAsyncClient implements RocketMQAsyncClient, Initiali
 
         long startTime = System.nanoTime();
 
-        return CompletableFuture
-                .supplyAsync(() -> {
-                    try {
-                        metricsCollector.incrementMessagesSent();
-                        return messagePublisher.sendMessageAsync(message);
-                    } catch (RocketMQException e) {
-                        throw new RuntimeException(e);
-                    }
-                }, clientExecutor)
-                .thenCompose(future -> future)
-                .whenComplete((result, throwable) -> {
-                    long latency = System.nanoTime() - startTime;
-                    metricsCollector.recordLatency(latency);
+        try {
+            metricsCollector.incrementMessagesSent();
+            CompletableFuture<ai.hack.rocketmq.result.SendResult> sendFuture = messagePublisher.sendMessageAsync(message);
 
-                    if (throwable != null) {
-                        logger.error("Async message send failed: {}", message.getMessageId(), throwable);
-                        metricsCollector.incrementMessagesFailed();
-                    } else {
-                        logger.debug("Async message sent successfully: {}", result.getMessageId());
-                    }
-                });
+            return sendFuture.whenComplete((result, throwable) -> {
+                long latency = System.nanoTime() - startTime;
+                metricsCollector.recordLatency(latency);
+
+                if (throwable != null) {
+                    logger.error("Async message send failed: {}", message.getMessageId(), throwable);
+                    metricsCollector.incrementMessagesFailed();
+                } else {
+                    logger.debug("Async message sent successfully: {}", result.getMessageId());
+                }
+            });
+        } catch (RocketMQException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     @Override
@@ -209,42 +206,39 @@ public class DefaultRocketMQAsyncClient implements RocketMQAsyncClient, Initiali
 
         long startTime = System.nanoTime();
 
-        return CompletableFuture
-                .supplyAsync(() -> {
-                    try {
-                        List<CompletableFuture<SendResult>> futures = new ArrayList<>();
+        try {
+            List<CompletableFuture<SendResult>> futures = new ArrayList<>();
 
-                        for (Message message : messages) {
-                           CompletableFuture<SendResult> future = messagePublisher.sendMessageAsync(message);
-                            futures.add(future);
-                        }
+            for (Message message : messages) {
+               CompletableFuture<SendResult> future = messagePublisher.sendMessageAsync(message);
+                futures.add(future);
+            }
 
-                        // Wait for all futures to complete
-                        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                                futures.toArray(new CompletableFuture[0]));
+            // Wait for all futures to complete
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                    futures.toArray(new CompletableFuture[0]));
 
-                        return allFutures.thenApply(v -> {
-                            List<SendResult> results = new ArrayList<>();
-                            for (CompletableFuture<SendResult> future : futures) {
-                                results.add(future.join());
-                            }
-                            return new BatchSendResult(results);
-                        });
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }, clientExecutor)
-                .thenCompose(future -> future)
-                .whenComplete((result, throwable) -> {
-                    long latency = System.nanoTime() - startTime;
-                    metricsCollector.recordLatency(latency);
+            CompletableFuture<BatchSendResult> batchFuture = allFutures.thenApply(v -> {
+                List<SendResult> results = new ArrayList<>();
+                for (CompletableFuture<SendResult> future : futures) {
+                    results.add(future.join());
+                }
+                return new BatchSendResult(results);
+            });
 
-                    if (throwable != null) {
-                        logger.error("Batch async message send failed", throwable);
-                    } else {
-                        logger.debug("Batch async message sent: {}", result.getSummary());
-                    }
-                });
+            return batchFuture.whenComplete((result, throwable) -> {
+                long latency = System.nanoTime() - startTime;
+                metricsCollector.recordLatency(latency);
+
+                if (throwable != null) {
+                    logger.error("Batch async message send failed", throwable);
+                } else {
+                    logger.debug("Batch async message sent: {}", result.getSummary());
+                }
+            });
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     @Override
@@ -415,6 +409,11 @@ public class DefaultRocketMQAsyncClient implements RocketMQAsyncClient, Initiali
     }
 
     @Override
+    public void destroy() throws Exception {
+        close();
+    }
+
+    @Override
     public boolean isReady() {
         return initialized.get() && !shuttingDown.get() && currentState.get() == ClientState.READY;
     }
@@ -441,7 +440,7 @@ public class DefaultRocketMQAsyncClient implements RocketMQAsyncClient, Initiali
                 tlsConfiguration = new TLSConfiguration(
                         true,
                         config.getTrustStorePath(),
-                        false, // keyStorePath
+                        null,  // keyStorePath
                         null,  // keyStorePassword
                         null   // trustStorePassword
                 );

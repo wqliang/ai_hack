@@ -199,11 +199,10 @@ public class RocksDBMessageStore implements InitializingBean, DisposableBean {
      */
     public synchronized void flushBatch() throws RocketMQException {
         try {
-            if (!writeBatch.isEmpty()) {
-                db.write(new WriteOptions(), writeBatch);
-                writeBatch.clear();
-                logger.debug("Write batch flushed to disk");
-            }
+            // writeBatch.isEmpty() not available, always flush for simplicity
+            db.write(new WriteOptions(), writeBatch);
+            writeBatch.clear();
+            logger.debug("Write batch flushed to disk");
         } catch (RocksDBException e) {
             throw new RocketMQException(ai.hack.rocketmq.exception.ErrorCode.PERSISTENCE_ERROR,
                     "Failed to flush write batch", e);

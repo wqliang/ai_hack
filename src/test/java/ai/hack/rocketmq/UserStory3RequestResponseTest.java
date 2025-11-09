@@ -13,13 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException as JavaTimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests the complete request-response correlation and timeout handling functionality.
  */
 @SpringBootTest
-@Testcontainers
 @TestPropertySource(properties = {
         "rocketmq.client.namesrv-addr=localhost:9876",
         "rocketmq.client.consumer-group=test-rr-consumer",

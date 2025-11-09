@@ -4,13 +4,13 @@ import ai.hack.rocketmq.callback.MessageCallback;
 import ai.hack.rocketmq.config.ClientConfiguration;
 import ai.hack.rocketmq.exception.RocketMQException;
 import ai.hack.rocketmq.exception.TimeoutException;
+import ai.hack.rocketmq.model.Message;
 import ai.hack.rocketmq.result.BatchSendResult;
 import ai.hack.rocketmq.result.SendResult;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeoutException as JavaTimeoutException;
 
 /**
  * Main async client interface for RocketMQ messaging operations.
