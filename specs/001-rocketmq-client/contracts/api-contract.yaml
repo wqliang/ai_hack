@@ -1,0 +1,573 @@
+# API Contract: RocketMQ Async Client Library
+
+**Version**: 1.0.0
+**Date**: 2025-11-09
+**Format**: OpenAPI 3.0.3
+
+## Overview
+
+This contract defines the Java API interface for the RocketMQ async client library. The library is designed as an SDK/library for embedding in applications, following the requirements for asynchronous message handling, FIFO ordering, TLS security, and at-least-once delivery guarantees.
+
+## Client Interface Definition
+
+### Main Client API
+
+```java
+package ai.hack.rocketmq;
+
+/**
+ * Main async client interface for RocketMQ messaging operations.
+ */
+public interface RocketMQAsyncClient extends AutoCloseable {
+
+    /**
+     * Initialize the client with configuration.
+     */
+    void initialize(ClientConfiguration config) throws RocketMQException;
+
+    /**
+     * Send a message asynchronously.
+     */
+    CompletableFuture<SendResult> sendMessageAsync(Message message) throws RocketMQException;
+
+    /**
+     * Send a message synchronously with timeout.
+     */
+    SendResult sendMessageSync(Message message, Duration timeout) throws RocketMQException;
+
+    /**
+     * Send multiple messages in batch.
+     */
+    CompletableFuture<BatchSendResult> sendBatchAsync(List<Message> messages) throws RocketMQException;
+
+    /**
+     * Send message and wait for response (request-response pattern).
+     */
+    CompletableFuture<Message> sendAndReceiveAsync(Message message, Duration timeout) throws RocketMQException;
+
+    /**
+     * Subscribe to a topic with message callback.
+     */
+    void subscribe(String topic, MessageCallback callback) throws RocketMQException;
+
+    /**
+     * Unsubscribe from a topic.
+     */
+    void unsubscribe(String topic) throws RocketMQException;
+
+    /**
+     * Get current client status and metrics.
+     */
+    ClientStatus getClientStatus();
+
+    /**
+     * Shutdown the client gracefully.
+     */
+    void shutdown(Duration timeout) throws RocketMQException;
+}
+```
+
+### Configuration API
+
+```java
+package ai.hack.rocketmq.config;
+
+/**
+ * Client configuration builder.
+ */
+public class ClientConfiguration {
+
+    // Required configuration
+    private String namesrvAddr;
+    private String producerGroup;
+    private String consumerGroup;
+
+    // Performance configuration
+    private int maxMessageSize = 2 * 1024 * 1024; // 2MB
+    private Duration sendTimeout = Duration.ofSeconds(3);
+    private Duration requestTimeout = Duration.ofSeconds(5);
+    private int retryTimes = 3;
+    private int maxConnections = 32;
+
+    // Security configuration
+    private boolean tlsEnabled = false;
+    private String accessKey;
+    private String secretKey;
+    private String trustStorePath;
+    private KeyManagerFactory keyManagerFactory;
+
+    // Persistence configuration
+    private boolean persistenceEnabled = true;
+    private String persistencePath;
+    private Duration persistenceFlushInterval = Duration.ofSeconds(5);
+
+    // Advanced configuration
+    private boolean compressionEnabled = true;
+    private boolean orderedProcessing = true;
+    private int maxConsumeThreads = 64;
+    private Duration healthCheckInterval = Duration.ofSeconds(30);
+
+    // Builder pattern
+    public static Builder builder() { return new Builder(); }
+
+    public static class Builder {
+        // Builder methods for all configuration options
+        public Builder namesrvAddr(String addr) { /* ... */ return this; }
+        public Builder producerGroup(String group) { /* ... */ return this; }
+        public Builder consumerGroup(String group) { /* ... */ return this; }
+        public Builder maxMessageSize(int size) { /* ... */ return this; }
+        public Builder sendTimeout(Duration timeout) { /* ... */ return this; }
+        public Builder enableTls(boolean enabled) { /* ... */ return this; }
+        public Builder authentication(String accessKey, String secretKey) { /* ... */ return this; }
+        public Builder persistence(String path, Duration interval) { /* ... */ return this; }
+        public ClientConfiguration build() { /* ... */ }
+    }
+}
+```
+
+### Message Entity API
+
+```java
+package ai.hack.rocketmq.model;
+
+/**
+ * Message entity with all required metadata.
+ */
+public class Message {
+
+    private String messageId;
+    private String topic;
+    private String callbackTopic;
+    private Map<String, Object> headers;
+    private byte[] payload;
+    private Instant timestamp;
+    private MessagePriority priority;
+    private Set<String> tags;
+
+    // Constructors
+    public Message(String topic, byte[] payload) { /* ... */ }
+    public Message(String topic, byte[] payload, String callbackTopic) { /* ... */ }
+
+    // Builder pattern
+    public static Builder builder() { return new Builder(); }
+
+    public static class Builder {
+        public Builder topic(String topic) { /* ... */ return this; }
+        public Builder payload(byte[] payload) { /* ... */ return this; }
+        public Builder callbackTopic(String callbackTopic) { /* ... */ return this; }
+        public Builder header(String key, Object value) { /* ... */ return this; }
+        public Builder priority(MessagePriority priority) { /* ... */ return this; }
+        public Builder tag(String tag) { /* ... */ return this; }
+        public Message build() { /* ... */ }
+    }
+
+    // Getters and setters
+    public String getMessageId() { return messageId; }
+    public String getTopic() { return topic; }
+    public String getCallbackTopic() { return callbackTopic; }
+    public Map<String, Object> getHeaders() { return headers; }
+    public byte[] getPayload() { return payload; }
+    public Instant getTimestamp() { return timestamp; }
+    public MessagePriority getPriority() { return priority; }
+    public Set<String> getTags() { return tags; }
+}
+```
+
+### Message Callback API
+
+```java
+package ai.hack.rocketmq.callback;
+
+/**
+ * Functional interface for message handling.
+ */
+@FunctionalInterface
+public interface MessageCallback {
+
+    /**
+     * Handle received message.
+     *
+     * @param message the received message
+     * @return processing result indicating success/failure
+     */
+    MessageProcessingResult processMessage(Message message) throws Exception;
+}
+
+/**
+ * Result of message processing.
+ */
+public class MessageProcessingResult {
+
+    private final boolean success;
+    private final String errorMessage;
+    private final Exception exception;
+    private final Message responseMessage;
+
+    public static MessageProcessingResult success() {
+        return new MessageProcessingResult(true, null, null, null);
+    }
+
+    public static MessageProcessingResult success(Message response) {
+        return new MessageProcessingResult(true, null, null, response);
+    }
+
+    public static MessageProcessingResult failure(String error, Exception ex) {
+        return new MessageProcessingResult(false, error, ex, null);
+    }
+
+    // Constructor and getters
+    private MessageProcessingResult(boolean success, String error, Exception ex, Message response) {
+        this.success = success;
+        this.errorMessage = error;
+        this.exception = ex;
+        this.responseMessage = response;
+    }
+
+    public boolean isSuccess() { return success; }
+    public String getErrorMessage() { return errorMessage; }
+    public Exception getException() { return exception; }
+    public Message getResponseMessage() { return responseMessage; }
+}
+```
+
+### Result Types API
+
+```java
+package ai.hack.rocketmq.result;
+
+/**
+ * Result of message sending operation.
+ */
+public class SendResult {
+
+    private final String messageId;
+    private final String topic;
+    private final boolean success;
+    private final String errorMessage;
+    private final long offset;
+    private final Duration processingTime;
+
+    // Static factory methods
+    public static SendResult success(String messageId, String topic, long offset, Duration time) {
+        return new SendResult(messageId, topic, true, null, offset, time);
+    }
+
+    public static SendResult failure(String messageId, String topic, String error) {
+        return new SendResult(messageId, topic, false, error, -1, Duration.ZERO);
+    }
+
+    // Constructor and getters
+    private SendResult(String messageId, String topic, boolean success, String error,
+                      long offset, Duration processingTime) {
+        this.messageId = messageId;
+        this.topic = topic;
+        this.success = success;
+        this.errorMessage = error;
+        this.offset = offset;
+        this.processingTime = processingTime;
+    }
+
+    public String getMessageId() { return messageId; }
+    public String getTopic() { return topic; }
+    public boolean isSuccess() { return success; }
+    public String getErrorMessage() { return errorMessage; }
+    public long getOffset() { return offset; }
+    public Duration getProcessingTime() { return processingTime; }
+}
+
+/**
+ * Result of batch message sending operation.
+ */
+public class BatchSendResult {
+
+    private final List<SendResult> results;
+    private final int totalCount;
+    private final int successCount;
+    private final int failureCount;
+
+    // Constructor and getters
+    public BatchSendResult(List<SendResult> results) {
+        this.results = Collections.unmodifiableList(results);
+        this.totalCount = results.size();
+        this.successCount = (int) results.stream().mapToInt(r -> r.isSuccess() ? 1 : 0).sum();
+        this.failureCount = totalCount - successCount;
+    }
+
+    public List<SendResult> getResults() { return results; }
+    public int getTotalCount() { return totalCount; }
+    public int getSuccessCount() { return successCount; }
+    public int getFailureCount() { return failureCount; }
+}
+```
+
+### Monitoring API
+
+```java
+package ai.hack.rocketmq.monitoring;
+
+/**
+ * Client status and metrics.
+ */
+public class ClientStatus {
+
+    private final ClientState state;
+    private final PerformanceMetrics metrics;
+    private final List<String> subscribedTopics;
+    private final Instant lastHealthCheck;
+
+    public ClientState getState() { return state; }
+    public PerformanceMetrics getMetrics() { return metrics; }
+    public List<String> getSubscribedTopics() { return subscribedTopics; }
+    public Instant getLastHealthCheck() { return lastHealthCheck; }
+}
+
+/**
+ * Client operational states.
+ */
+public enum ClientState {
+    INITIALIZING,
+    CONNECTING,
+    CONNECTED,
+    DISCONNECTING,
+    DISCONNECTED,
+    ERROR
+}
+
+/**
+ * Performance metrics for monitoring.
+ */
+public class PerformanceMetrics {
+
+    private final long messagesSent;
+    private final long messagesReceived;
+    private final double averageLatency;
+    private final double throughput;
+    private final int activeConnections;
+    private final double errorRate;
+    private final long memoryUsageBytes;
+
+    // Constructor and getters
+    public PerformanceMetrics(long sent, long received, double avgLatency,
+                            double throughput, int connections,
+                            double errorRate, long memoryBytes) {
+        this.messagesSent = sent;
+        this.messagesReceived = received;
+        this.averageLatency = avgLatency;
+        this.throughput = throughput;
+        this.activeConnections = connections;
+        this.errorRate = errorRate;
+        this.memoryUsageBytes = memoryBytes;
+    }
+
+    public long getMessagesSent() { return messagesSent; }
+    public long getMessagesReceived() { return messagesReceived; }
+    public double getAverageLatency() { return averageLatency; }
+    public double getThroughput() { return throughput; }
+    public int getActiveConnections() { return activeConnections; }
+    public double getErrorRate() { return errorRate; }
+    public long getMemoryUsageBytes() { return memoryUsageBytes; }
+}
+```
+
+### Exception Hierarchy
+
+```java
+package ai.hack.rocketmq.exception;
+
+/**
+ * Base exception for RocketMQ client.
+ */
+public class RocketMQException extends Exception {
+
+    private final ErrorCode errorCode;
+
+    public RocketMQException(ErrorCode code, String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = code;
+    }
+
+    public ErrorCode getErrorCode() { return errorCode; }
+}
+
+/**
+ * Error codes for different failure types.
+ */
+public enum ErrorCode {
+    CONNECTION_FAILED("CONN_001", "Failed to connect to RocketMQ broker"),
+    AUTHENTICATION_FAILED("AUTH_001", "Authentication with broker failed"),
+    MESSAGE_TOO_LARGE("MSG_001", "Message exceeds size limit"),
+    TIMEOUT("TIMEOUT_001", "Operation timed out"),
+    NETWORK_ERROR("NET_001", "Network communication error"),
+    CONFIGURATION_ERROR("CONF_001", "Invalid configuration"),
+    PERSISTENCE_ERROR("PERSIST_001", "Local persistence failed"),
+    CALLBACK_FAILED("CALLBACK_001", "Message callback processing failed"),
+    BROKER_UNAVAILABLE("BRK_001", "RocketMQ broker is unavailable"),
+    TOPIC_NOT_FOUND("TOPIC_001", "Topic not found on broker");
+
+    private final String code;
+    private final String description;
+
+    ErrorCode(String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
+
+    public String getCode() { return code; }
+    public String getDescription() { return description; }
+}
+
+/**
+ * Specific exception types.
+ */
+public class ConnectionException extends RocketMQException {
+    public ConnectionException(String message, Throwable cause) {
+        super(ErrorCode.CONNECTION_FAILED, message, cause);
+    }
+}
+
+public class TimeoutException extends RocketMQException {
+    public TimeoutException(String message, Throwable cause) {
+        super(ErrorCode.TIMEOUT, message, cause);
+    }
+}
+
+public class MessageSizeException extends RocketMQException {
+    public MessageSizeException(String message, Throwable cause) {
+        super(ErrorCode.MESSAGE_TOO_LARGE, message, cause);
+    }
+}
+```
+
+## Usage Examples
+
+### Basic Usage Pattern
+
+```java
+// Configuration
+ClientConfiguration config = ClientConfiguration.builder()
+    .namesrvAddr("localhost:9876")
+    .producerGroup("my-app-producer")
+    .consumerGroup("my-app-consumer")
+    .enableTls(true)
+    .persistence("/tmp/rocketmq-persistence", Duration.ofSeconds(10))
+    .maxConnections(64)
+    .build();
+
+// Initialize client
+RocketMQAsyncClient client = new DefaultRocketMQAsyncClient();
+client.initialize(config);
+
+// Send message asynchronously
+Message message = Message.builder()
+    .topic("user.events")
+    .payload("User registered".getBytes())
+    .header("event-type", "user.registered")
+    .priority(MessagePriority.NORMAL)
+    .build();
+
+CompletableFuture<SendResult> future = client.sendMessageAsync(message);
+future.thenAccept(result -> {
+    if (result.isSuccess()) {
+        System.out.println("Message sent: " + result.getMessageId());
+    } else {
+        System.err.println("Send failed: " + result.getErrorMessage());
+    }
+});
+
+// Subscribe to messages
+client.subscribe("user.events", (msg) -> {
+    System.out.println("Received: " + new String(msg.getPayload()));
+    return MessageProcessingResult.success();
+});
+
+// Request-response pattern
+Message request = Message.builder()
+    .topic("user.queries")
+    .payload("Get user:123".getBytes())
+    .callbackTopic("user.responses")
+    .build();
+
+CompletableFuture<Message> responseFuture = client.sendAndReceiveAsync(request, Duration.ofSeconds(5));
+responseFuture.thenAccept(response -> {
+    System.out.println("Response: " + new String(response.getPayload()));
+});
+```
+
+### Advanced Configuration Example
+
+```java
+// High-performance configuration
+ClientConfiguration highPerfConfig = ClientConfiguration.builder()
+    .namesrvAddr("broker1:9876,broker2:9876")
+    .producerGroup("high-perf-producer")
+    .maxMessageSize(4 * 1024 * 1024) // 4MB
+    .sendTimeout(Duration.ofSeconds(10))
+    .retryTimes(5)
+    .maxConnections(128)
+    .enableTls(true)
+    .authentication("accessKey", "secretKey")
+    .persistence("/opt/app/rocketmq-data", Duration.ofSeconds(5))
+    .compressionEnabled(true)
+    .maxConsumeThreads(128)
+    .healthCheckInterval(Duration.ofSeconds(15))
+    .build();
+
+// Configuration with custom TLS
+KeyManagerFactory kmf = createCustomKeyManagerFactory();
+ClientConfiguration tlsConfig = ClientConfiguration.builder()
+    .namesrvAddr("secure-broker:9876")
+    .enableTls(true)
+    .authentication("accessKey", "secretKey")
+    .trustStorePath("/path/to/truststore.jks")
+    .keyManagerFactory(kmf)
+    .build();
+```
+
+## Integration Requirements
+
+### Dependencies
+
+```xml
+<!-- Required dependencies -->
+<dependency>
+    <groupId>org.apache.rocketmq</groupId>
+    <artifactId>rocketmq-client-java</artifactId>
+    <version>5.3.3</version>
+</dependency>
+<dependency>
+    <groupId>org.rocksdb</groupId>
+    <artifactId>rocksdbjni</artifactId>
+    <version>8.10.0</version>
+</dependency>
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <version>2.2.224</version>
+</dependency>
+
+<!-- Optional Spring Boot integration -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter</artifactId>
+    <version>3.3.5</version>
+</dependency>
+```
+
+### Java Version Requirements
+
+- **Minimum**: Java 11
+- **Recommended**: Java 17+
+- **Optimal**: Java 21 (virtual threads support)
+
+### Performance Requirements
+
+- **Memory**: < 100MB total usage
+- **Latency**: < 50ms P95 for message publishing
+- **Throughput**: 1000+ concurrent operations
+- **Reliability**: 99.9% message delivery success rate
+
+---
+
+**Contract Status**: Final - Ready for implementation
+**Implementation Target**: Phase 2 development
+**Testing Requirements**: Comprehensive unit, integration, and performance testing
