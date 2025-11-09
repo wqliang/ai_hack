@@ -81,7 +81,7 @@ public class TopicManager {
      *
      * @throws MQClientException 启动失败时抛出
      */
-    public void start() throws MQClientException {
+    public synchronized void start() throws MQClientException {
         // 步骤1: 检查启动状态，避免重复启动
         if (!started) {
             // 步骤2: 启动管理客户端，建立与 NameServer 的连接
@@ -104,7 +104,7 @@ public class TopicManager {
      * 3. 标记为未启动状态
      * 4. 记录关闭日志
      */
-    public void shutdown() {
+    public synchronized void shutdown() {
         // 步骤1: 检查是否已启动，避免重复关闭
         if (started) {
             // 步骤2: 关闭管理客户端，断开连接并释放资源

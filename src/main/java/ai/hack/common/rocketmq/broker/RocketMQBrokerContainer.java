@@ -59,7 +59,7 @@ public class RocketMQBrokerContainer {
                 builder.brokerName, builder.clusterName, builder.listenPort, builder.namesrvAddr);
     }
 
-    public void start() throws Exception {
+    public synchronized void start() throws Exception {
         if (started.compareAndSet(false, true)) {
             log.info("Starting RocketMQ Broker...");
 
@@ -88,7 +88,7 @@ public class RocketMQBrokerContainer {
         }
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         if (started.compareAndSet(true, false)) {
             log.info("Shutting down RocketMQ Broker...");
             if (brokerController != null) {

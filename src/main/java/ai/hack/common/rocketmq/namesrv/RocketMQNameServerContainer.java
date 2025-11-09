@@ -20,7 +20,6 @@ public class RocketMQNameServerContainer {
     private final NettyServerConfig nettyServerConfig;
     private NamesrvController namesrvController;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private final Object LOCK = new Object();
 
     private RocketMQNameServerContainer(Builder builder) {
         this.namesrvConfig = new NamesrvConfig();
@@ -46,7 +45,6 @@ public class RocketMQNameServerContainer {
 
     public void start() throws Exception {
 
-
         synchronized (LOCK) {
             if (started.compareAndSet(false, true)) {
                 log.info("Starting RocketMQ NameServer...");
@@ -70,7 +68,7 @@ public class RocketMQNameServerContainer {
         }
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         if (started.compareAndSet(true, false)) {
             log.info("Shutting down RocketMQ NameServer...");
             if (namesrvController != null) {
