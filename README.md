@@ -1,4 +1,5 @@
 # AI Hack - Spring AI Demo
+d# AI Hack - Spring AI Demo
 
 A demo project built with Spring AI 1.0.3, demonstrating AI chat capabilities using OpenAI and Ollama.
 

@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -102,6 +102,10 @@ Located at `src/main/java/ai/hack/test/EmbeddedRocketMQBroker.java`, this utilit
 ## Active Technologies
 - Java 21 (existing project standard) + Spring Boot 3.3.5, Spring AI 1.0.3, JUnit 5, Mockito, MockMvc, AssertJ (001-chat-service-controller-tests)
 - N/A (testing feature, no new storage requirements) (001-chat-service-controller-tests)
+- Batch scripting (Windows), Bash scripting (Linux) + RocketMQ installation with mqadmin tool (001-init-script)
+- File system (scripts directory, .env file) (001-init-script)
+- Java 21 (with Java 17 fallback compatibility via multi-release JAR) + Apache RocketMQ 5.3.3 Java Client (official), Spring Boot 3.3.5, RocksDB, H2 Database (001-rocketmq-client)
+- Hybrid approach: RocksDB for message persistence + H2 for metadata/indexing (001-rocketmq-client)
 
 ## Recent Changes
 - 001-chat-service-controller-tests: Added Java 21 (existing project standard) + Spring Boot 3.3.5, Spring AI 1.0.3, JUnit 5, Mockito, MockMvc, AssertJ

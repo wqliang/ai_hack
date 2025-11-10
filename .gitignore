@@ -34,10 +34,10 @@ application-local.yml
 .test/
 
 # Claude Code
-.claude
+.claude/
 
 # spec-kit
-.specify
+.specify/
 
 # jacoco
-test-reports
+test-reports/
