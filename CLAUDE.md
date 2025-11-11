@@ -106,6 +106,8 @@ Located at `src/main/java/ai/hack/test/EmbeddedRocketMQBroker.java`, this utilit
 - File system (scripts directory, .env file) (001-init-script)
 - Java 21 (with Java 17 fallback compatibility via multi-release JAR) + Apache RocketMQ 5.3.3 Java Client (official), Spring Boot 3.3.5, RocksDB, H2 Database (001-rocketmq-client)
 - Hybrid approach: RocksDB for message persistence + H2 for metadata/indexing (001-rocketmq-client)
+- Java 21 (with Java 17 compatibility via multi-release JAR) + Apache RocketMQ 5.3.3 client library, Spring Boot 3.3.5, RocksDB 8.10.0, H2 Database 2.2.224 (004-rocketmq-rpc-client)
+- Hybrid approach - RocksDB for message persistence + H2 for metadata/correlation tracking (in-memory or file-based) (004-rocketmq-rpc-client)
 
 ## Recent Changes
 - 001-chat-service-controller-tests: Added Java 21 (existing project standard) + Spring Boot 3.3.5, Spring AI 1.0.3, JUnit 5, Mockito, MockMvc, AssertJ

@@ -4,3 +4,24 @@ spring:
       api-key: test-key
     ollama:
       base-url: http://localhost:11434
+
+rocketmq:
+  rpc:
+    client:
+      # RocketMQ broker address for testing
+      broker-url: localhost:9876
+
+      # Topic for sending test requests
+      request-topic: RPC_REQUEST_TEST
+
+      # Default timeout for test RPC calls (milliseconds)
+      default-timeout-millis: 5000
+
+      # Maximum concurrent pending requests for testing
+      max-concurrent-requests: 100
+
+      # Maximum concurrent streaming sessions for testing
+      max-concurrent-sessions: 10
+
+      # Prefix for response topics
+      response-topic-prefix: RESPONSE_

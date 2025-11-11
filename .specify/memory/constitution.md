@@ -1,50 +1,172 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: N/A (initial version) → 1.0.0
+Modified principles: N/A (initial creation)
+Added sections:
+  - Core Principles (5 principles)
+  - Quality Standards
+  - Development Workflow
+  - Governance
+Removed sections: N/A
+Templates requiring updates:
+  ✅ plan-template.md - Constitution Check section compatible
+  ✅ spec-template.md - Requirements align with principles
+  ✅ tasks-template.md - Test-driven approach compatible
+  ✅ agent-file-template.md - No specific updates needed
+  ✅ checklist-template.md - No specific updates needed
+Follow-up TODOs: None
+-->
+
+# AI Hack Spring AI Demo Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Code Documentation (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every class and method MUST have JavaDoc comments explaining its purpose and behavior. Key implementation steps within methods MUST have inline comments describing what the code is doing. This principle ensures code maintainability and knowledge transfer.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: In a Java application that integrates AI capabilities, clear documentation is essential for understanding both business logic and AI model interactions. Well-documented code reduces onboarding time and prevents technical debt.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Requirements**:
+- All public classes MUST have JavaDoc with @author, class description, and @since tags
+- All public and protected methods MUST have JavaDoc with @param, @return, and @throws tags
+- Complex algorithms or business logic MUST have inline comments explaining the approach
+- Magic numbers MUST be replaced with named constants with explanatory comments
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Java Development Standards
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+All code MUST follow standard Java development conventions including proper naming, package organization, and design patterns. Code MUST adhere to Java 21 language features and best practices.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Rationale**: Consistent coding standards improve code readability, reduce bugs, and enable effective team collaboration. Following industry-standard practices ensures the codebase remains accessible to any Java developer.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Requirements**:
+- Follow Java naming conventions: camelCase for methods/variables, PascalCase for classes
+- Package names follow reverse domain notation (ai.hack.*)
+- Use appropriate access modifiers (prefer private/protected, expose public only when necessary)
+- Leverage Java 21 features: records for DTOs, sealed classes where appropriate, pattern matching
+- Apply SOLID principles and appropriate design patterns
+- Avoid raw types, prefer generics for type safety
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Spring Boot Best Practices
+
+Application architecture MUST follow Spring Boot conventions and best practices for dependency injection, configuration management, and layered architecture.
+
+**Rationale**: Spring Boot provides proven patterns for building production-ready applications. Following these patterns ensures scalability, testability, and maintainability.
+
+**Requirements**:
+- Use constructor-based dependency injection (avoid field injection)
+- Follow layered architecture: Controller → Service → Repository
+- Use Spring configuration properties for externalized configuration
+- Leverage Spring Boot auto-configuration when possible
+- Use appropriate Spring annotations (@Service, @Controller, @Repository, @Configuration)
+- Implement proper exception handling with @ControllerAdvice
+- Use Spring's validation framework for input validation
+
+### IV. Testing Discipline
+
+All significant features MUST have corresponding tests. Unit tests for services, integration tests for API endpoints, and contract tests for external dependencies (AI models) are required.
+
+**Rationale**: Tests serve as executable documentation and prevent regressions. Given the project's AI integration, testing ensures both business logic correctness and proper AI model interaction.
+
+**Requirements**:
+- Unit tests for all service classes using JUnit 5 and Mockito
+- Integration tests for REST endpoints using MockMvc
+- Test coverage focus on business logic and edge cases
+- Use test profiles (application-test.yml) to isolate test configuration
+- Mock external AI dependencies (OpenAI, Ollama) in unit tests
+- Use descriptive test method names following Given-When-Then pattern
+- Tests MUST be written before or alongside implementation (Test-Driven Development encouraged)
+
+### V. Git Flow and Version Control
+
+The project MUST follow Git Flow branching strategy with feature branches, proper commit messages, and protected main branch.
+
+**Rationale**: Git Flow provides a structured approach to version control that supports parallel development, release management, and hotfix deployment.
+
+**Requirements**:
+- Use conventional commits: feat:, fix:, docs:, refactor:, test:, chore:
+- Feature branches MUST branch from develop and merge back to develop
+- Main branch is production-ready code only
+- All merges MUST use --no-ff to preserve branch history
+- Pull requests require code review before merge
+- Commit messages MUST be descriptive and reference related issues
+
+## Quality Standards
+
+### Code Review Requirements
+- All code changes require peer review via pull request
+- Reviewers MUST verify:
+  - JavaDoc and inline comments are present and accurate
+  - Code follows Java and Spring Boot best practices
+  - Tests exist and provide adequate coverage
+  - No security vulnerabilities (SQL injection, XSS, command injection, etc.)
+  - Proper error handling and logging
+
+### Security Standards
+- Never commit secrets (API keys, passwords) to version control
+- Use environment variables for sensitive configuration (OPENAI_API_KEY)
+- Validate and sanitize all user inputs
+- Use parameterized queries to prevent SQL injection
+- Implement proper authentication and authorization for APIs
+- Log security events for audit trails
+
+### Performance Standards
+- RESTful APIs SHOULD respond within 200ms for simple operations (excluding AI processing time)
+- AI chat operations timeout configured appropriately for model response times
+- Use connection pooling for database and HTTP clients
+- Implement caching where appropriate (Spring Cache abstraction)
+
+## Development Workflow
+
+### Build and Test Process
+1. Local development: `./gradlew build` MUST pass before commit
+2. Run tests: `./gradlew test` MUST show all tests passing
+3. Code review: Pull request created, reviewed, and approved
+4. Integration: Merge to develop with --no-ff
+5. Release preparation: Create release/* branch from develop when ready
+6. Production deployment: Merge release to main after validation
+
+### Configuration Management
+- Default configuration in application.yml
+- Environment-specific overrides in application-{profile}.yml
+- Use Spring profiles for different environments (test, dev, prod)
+- Document all configuration properties in CLAUDE.md or README.md
+
+### Dependency Management
+- Keep dependencies up to date with security patches
+- Document rationale for major dependency versions in build.gradle.kts
+- Review Spring Boot and Spring AI release notes before upgrading
+- Test thoroughly after dependency updates
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Process
+This constitution can be amended through the following process:
+1. Proposal: Create issue describing proposed amendment and rationale
+2. Discussion: Team discusses impact, benefits, and migration plan
+3. Approval: Team lead or majority approval required
+4. Documentation: Update constitution with new version number
+5. Migration: Update existing code to comply with new principles (if applicable)
+6. Communication: Announce changes to all team members
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Version Semantics
+- MAJOR: Backward-incompatible changes requiring significant code refactoring
+- MINOR: New principles or sections added, expanded guidance
+- PATCH: Clarifications, typos, non-semantic refinements
+
+### Compliance Review
+- All pull requests MUST verify compliance with this constitution
+- Code reviewers are responsible for enforcing these principles
+- Deviations MUST be justified in writing and approved by team lead
+- Quarterly review of constitution relevance and effectiveness
+
+### Exception Process
+When principles cannot be followed:
+1. Document the specific principle being violated
+2. Explain why it cannot be followed (technical limitation, external dependency, etc.)
+3. Describe simpler alternatives considered and why they were rejected
+4. Get explicit approval from team lead
+5. Document the exception in code comments or design documents
+
+**Version**: 1.0.0 | **Ratified**: 2025-11-11 | **Last Amended**: 2025-11-11

@@ -43,28 +43,23 @@ public class RocketMQNameServerContainer {
                 builder.listenPort, builder.rocketmqHome);
     }
 
-    public void start() throws Exception {
-
-        synchronized (LOCK) {
-            if (started.compareAndSet(false, true)) {
-                log.info("Starting RocketMQ NameServer...");
-                this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
-
-                if (!namesrvController.initialize()) {
-                    namesrvController.shutdown();
-                    throw new RuntimeException("Failed to initialize RocketMQ NameServer");
-                }
-
-                namesrvController.start();
-                log.info("=======================================================");
-                log.info("RocketMQ NameServer started successfully on port: {}",
-                        nettyServerConfig.getListenPort());
-                log.info("NameServer address: {}:{}",
-                        getAddress(), nettyServerConfig.getListenPort());
-                log.info("=======================================================");
-            } else {
-                log.warn("RocketMQ NameServer is already started");
+    public synchronized void start() throws Exception {
+        if (started.compareAndSet(false, true)) {
+            log.info("Starting RocketMQ NameServer...");
+            this.namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
+            if (!namesrvController.initialize()) {
+                namesrvController.shutdown();
+                throw new RuntimeException("Failed to initialize RocketMQ NameServer");
             }
+            namesrvController.start();
+            log.info("=======================================================");
+            log.info("RocketMQ NameServer started successfully on port: {}",
+                    nettyServerConfig.getListenPort());
+            log.info("NameServer address: {}:{}",
+                    getAddress(), nettyServerConfig.getListenPort());
+            log.info("=======================================================");
+        } else {
+            log.warn("RocketMQ NameServer is already started");
         }
     }
 
